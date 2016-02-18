@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    <servlet>
+        <servlet-name>MappingServlet</servlet-name>
+        <servlet-class>gr.aueb.servlets.MappingServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SourceFileHandlerServlet</servlet-name>
+        <servlet-class>gr.aueb.servlets.SourceFileHandlerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>TargetFileHandlerServlet</servlet-name>
+        <servlet-class>gr.aueb.servlets.TargetFileHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MappingServlet</servlet-name>
+        <url-pattern>/MappingServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SourceFileHandlerServlet</servlet-name>
+        <url-pattern>/SourceFileHandlerServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TargetFileHandlerServlet</servlet-name>
+        <url-pattern>/TargetFileHandlerServlet</url-pattern>
+    </servlet-mapping></web-app>
