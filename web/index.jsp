@@ -9,7 +9,7 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>MIPMap Web</title>
+        <title>WebMIPMap</title>
         <!--JQuery-->
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
@@ -21,9 +21,10 @@
         <!--javascript for textarea-->
         <script type="text/javascript" src="rangyinputs-jquery.js"></script>
         <!--javascript for this page-->
-        <script src="spicyjavascript.js"></script>
+        <script src="functions.js"></script>
+        <script src="mipmapjavascript.js"></script>
         
-        <link rel="stylesheet" href="spicylook.css" />
+        <link rel="stylesheet" href="mipmaplook.css" />
         <!--css for tabs, dialogs etc-->
         <link rel="stylesheet" href="jquery.ui.css">
         <!--css for wizard-->
@@ -34,8 +35,9 @@
         <link rel="stylesheet" href="themes/default/style.css" />
         <!--css for jsplumb(arrows)-->
         <link rel="stylesheet" href="jsplumb.css" />
+    </head>
     <body>
-        <div>
+        <div id="navMenu">
         <ul id="jMenu">
             <li>
                 <a>Mapping Task</a>
@@ -45,21 +47,20 @@
                     <li><a id="saveTask">Save</a></li>
                     <li><a id="deleteTask">Delete</a></li>
                 </ul>
-            </li>
-            <li>
-                <a>DataSource</a>
-            </li>
+            </li>           
             <li>
                 <a>Map</a>
                 <ul>
                     <li><a id="generate">Generate Transformations</a></li>
-                    <li><a>Translate</a></li>
-                    <li><a>Generate & Translate</a></li>
+                    <li><a id="export">Export TGDs</a></li>
                 </ul>
             </li>
-            <li>
-                <a>Match</a>
+             <!--li>
+                <a>Preprocessing</a>
             </li>
+            <li>
+                <a id="logout">Logout</a>
+            </li-->
         </ul>
         </div>
                

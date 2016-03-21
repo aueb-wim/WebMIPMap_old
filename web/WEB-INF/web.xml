@@ -7,10 +7,18 @@
     <servlet>
         <servlet-name>SourceFileHandlerServlet</servlet-name>
         <servlet-class>gr.aueb.servlets.SourceFileHandlerServlet</servlet-class>
+        <init-param>
+            <param-name>FILE_UPLOAD_PATH</param-name>
+            <param-value>${a.system.MIPMAP_HOME}</param-value>
+        </init-param>
     </servlet>
     <servlet>
         <servlet-name>TargetFileHandlerServlet</servlet-name>
         <servlet-class>gr.aueb.servlets.TargetFileHandlerServlet</servlet-class>
+        <init-param>
+            <param-name>FILE_UPLOAD_PATH</param-name>
+            <param-value>${a.system.MIPMAP_HOME}</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>MappingServlet</servlet-name>
@@ -23,4 +31,32 @@
     <servlet-mapping>
         <servlet-name>TargetFileHandlerServlet</servlet-name>
         <url-pattern>/TargetFileHandlerServlet</url-pattern>
-    </servlet-mapping></web-app>
+    </servlet-mapping>
+    <!--security-constraint>
+        <web-resource-collection>
+            <web-resource-name>
+               WebMIPMap
+            </web-resource-name>
+            <url-pattern>/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>
+            Let only logged in users use this app
+            </description>
+            <role-name>userGroup</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-role>
+  	   <role-name>userGroup</role-name>
+    </security-role>
+    <login-config>
+      <auth-method>FORM</auth-method>
+      <form-login-config>
+        <form-login-page>/login.jsp</form-login-page>
+        <form-error-page>/loginError.html</form-error-page>
+      </form-login-config>
+    </login-config>
+    <deny-uncovered-http-methods/-->
+</web-app>

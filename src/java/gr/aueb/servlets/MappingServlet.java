@@ -10,6 +10,7 @@ import gr.aueb.connection.ActionDeleteJoinCondition;
 import gr.aueb.connection.ActionJoinConditionChangeOptions;
 import gr.aueb.connection.ActionNewConnection;
 import gr.aueb.connection.ActionNewJoinCondition;
+import it.unibas.spicy.persistence.DAOException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
@@ -20,21 +21,28 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.HashMap;
-import it.unibas.spicygui.Costanti;
+import gr.aueb.mipmapgui.Costanti;
 import it.unibas.spicygui.commons.Modello;
-import it.unibas.spicygui.controllo.Scenario;
-import it.unibas.spicygui.controllo.file.ActionDeleteMappingTask;
-import it.unibas.spicygui.controllo.file.ActionNewMappingTask;
-import it.unibas.spicygui.controllo.file.ActionOpenMappingTask;
-import it.unibas.spicygui.controllo.file.ActionRemoveMappingTask;
-import it.unibas.spicygui.controllo.file.ActionSaveMappingTask;
-import it.unibas.spicygui.controllo.mapping.ActionGenerateTransformations;
-import it.unibas.spicygui.controllo.file.ActionSelectMappingTask;
-import it.unibas.spicygui.controllo.mapping.ActionViewSql;
-import it.unibas.spicygui.controllo.mapping.ActionViewTransformations;
-import it.unibas.spicygui.controllo.mapping.ActionViewXQuery;
-import it.unibas.spicygui.controllo.tree.ActionSelectionCondition;
+import gr.aueb.mipmapgui.controller.Scenario;
+import gr.aueb.mipmapgui.controller.file.ActionCleanDirectory;
+import gr.aueb.mipmapgui.controller.file.ActionCreateUserDirectory;
+import gr.aueb.mipmapgui.controller.file.ActionDeleteMappingTask;
+import gr.aueb.mipmapgui.controller.file.ActionInitialize;
+import gr.aueb.mipmapgui.controller.file.ActionNewMappingTask;
+import gr.aueb.mipmapgui.controller.file.ActionOpenMappingTask;
+import gr.aueb.mipmapgui.controller.file.ActionRemoveMappingTask;
+import gr.aueb.mipmapgui.controller.file.ActionSaveMappingTask;
+import gr.aueb.mipmapgui.controller.mapping.ActionGenerateTransformations;
+import gr.aueb.mipmapgui.controller.file.ActionSelectMappingTask;
+import gr.aueb.mipmapgui.controller.mapping.ActionViewSql;
+import gr.aueb.mipmapgui.controller.mapping.ActionViewTGDs;
+import gr.aueb.mipmapgui.controller.mapping.ActionViewTransformations;
+import gr.aueb.mipmapgui.controller.mapping.ActionViewXQuery;
+import gr.aueb.mipmapgui.view.tree.ActionSelectionCondition;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -57,178 +65,213 @@ public class MappingServlet extends HttpServlet {
      */
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, ParseException {    
+            throws ServletException, IOException {    
         response.setContentType("text/html;charset=UTF-8");
         
         String user = request.getRemoteUser();
         //String user = request.getUserPrincipal().getName();
         if (user==null){
-            user = "johnny";
+            user = "user";
         }
         
         String action = (request.getParameter("action"));
-        switch(action){
-            case "initialize":
-                try (PrintWriter out = response.getWriter()) {
+        PrintWriter out = response.getWriter();
+        JSONObject outputObject = new JSONObject();
+        boolean send = true;
+        try {
+            switch(action){            
+                case "initialize":
+                {
                     initialize();
-                    /*********************************************/
-                    JSONObject userFiles = new JSONObject();
-                    JSONArray fileArr = new JSONArray();
-            
-                    File dir = new File(Costanti.SERVER_MAIN_FOLDER + user + "/");
-                    String[] files = dir.list(DirectoryFileFilter.INSTANCE );
-                    for (String file : files) {
-                        if (!file.equalsIgnoreCase("temp")){
-                            fileArr.add(file);
-                        }
-                    }                    
-                    userFiles.put("savedTasks", fileArr);
-                    out.write(userFiles.toJSONString());
-                    /*********************************************/
+                    ActionInitialize actionInitialize = new ActionInitialize(modello);
+                    actionInitialize.performAction(user);
+                    outputObject = actionInitialize.getJSONObject();
+                    break;
                 }
-                break;
-            case "new_mapping_task":
-                try (PrintWriter out = response.getWriter()) {                                      
-                   String scenarioNo = request.getParameter("scenarioNo");
-                   ActionNewMappingTask actionNewMapTask = new ActionNewMappingTask(modello,Integer.valueOf(scenarioNo),user);
-                   actionNewMapTask.performAction(request);
-                   JSONObject trees = actionNewMapTask.getSchemaTreesObject();
-                   out.write(trees.toJSONString());
+                case "new_mapping_task":
+                {                                         
+                    String scenarioNo = request.getParameter("scenarioNo");
+                    ActionNewMappingTask actionNewMapTask = new ActionNewMappingTask(modello, Integer.valueOf(scenarioNo), user);
+                    actionNewMapTask.performAction(request);
+                    outputObject = actionNewMapTask.getSchemaTreesObject();              
+                    break;
                 }
-                break;
-            case "save_mapping_task":
-                try (PrintWriter out = response.getWriter()) {                                      
-                   String saveName = request.getParameter("saveName");
-                   String scenarioNo = request.getParameter("scenarioNo");
-                   ActionSaveMappingTask actionSaveMapTask = new ActionSaveMappingTask(modello, Integer.valueOf(scenarioNo));
-                   actionSaveMapTask.performAction(saveName, user);
-                   out.write(saveName);
+                case "save_mapping_task":
+                {                                       
+                    String saveName = request.getParameter("saveName");
+                    String scenarioNo = request.getParameter("scenarioNo");
+                    ActionSaveMappingTask actionSaveMapTask = new ActionSaveMappingTask(modello, Integer.valueOf(scenarioNo));
+                    actionSaveMapTask.performAction(saveName, user);
+                    outputObject.put("saveName",saveName);              
+                    break; 
                 }
-                break; 
-            case "open_mapping_task":
-                try (PrintWriter out = response.getWriter()) {                                      
-                   String scenarioNo = request.getParameter("scenarioNo");
-                   ActionOpenMappingTask actionOpenMapTask = new ActionOpenMappingTask(modello, Integer.valueOf(scenarioNo));
-                   actionOpenMapTask.performAction(request, user);
-                   JSONObject treesWithConnections = actionOpenMapTask.getSchemaTreesObject();
-                   out.write(treesWithConnections.toJSONString());
+                case "open_mapping_task":
+                {                                        
+                    String scenarioNo = request.getParameter("scenarioNo");
+                    ActionOpenMappingTask actionOpenMapTask = new ActionOpenMappingTask(modello, Integer.valueOf(scenarioNo));
+                    actionOpenMapTask.performAction(request, user);
+                    outputObject = actionOpenMapTask.getSchemaTreesObject();               
+                    break;
                 }
-                break;
-            case "delete_mapping_task":
-                try (PrintWriter out = response.getWriter()) {
-                   String deleteName = request.getParameter("deleteName");
-                   ActionDeleteMappingTask actionDeleteMapTask = new ActionDeleteMappingTask(modello);
-                   actionDeleteMapTask.performAction(deleteName, user);
-                   out.write(deleteName);
+                case "delete_mapping_task":
+                { 
+                    String deleteName = request.getParameter("deleteName");
+                    ActionDeleteMappingTask actionDeleteMapTask = new ActionDeleteMappingTask(modello);
+                    actionDeleteMapTask.performAction(deleteName, user);
+                    outputObject.put("deleteName",deleteName);                
+                    break; 
                 }
-                break; 
-            case "established_connection":
-                try (PrintWriter out = response.getWriter()) {            
+                case "established_connection":
+                {              
                     String scenarioNo = request.getParameter("scenarioNo");          
                     ActionNewConnection newConnection = new ActionNewConnection(modello,scenarioNo);                    
-                    newConnection.performAction(request);
+                    newConnection.performAction(request);                
+                    break;
+                } 
+                case "update_connection":
+                {          
+                    String scenarioNo = request.getParameter("scenarioNo");         
+                    ActionDeleteConnection deleteConnection = new ActionDeleteConnection(modello,scenarioNo);
+                    deleteConnection.performAction(request);
+                    ActionNewConnection newConnection = new ActionNewConnection(modello,scenarioNo); 
+                    newConnection.performAction(request);                           
+                    break;
                 }
-                break;
-            case "new_join_condition":
-                try (PrintWriter out = response.getWriter()) {            
+                case "detached_connection":
+                {    
+                    String scenarioNo = request.getParameter("scenarioNo");                
+                    ActionDeleteConnection deleteConnection = new ActionDeleteConnection(modello,scenarioNo);
+                    deleteConnection.performAction(request);                
+                    break;
+                }
+                case "delete_all_connections":
+                {   
+                    String scenarioNo = request.getParameter("scenarioNo");
+                    String[] sourcePathArray = request.getParameterValues("sourcePathArray[]");
+                    String[] targetPathArray = request.getParameterValues("targetPathArray[]");
+                    ActionDeleteConnection deleteConnection = new ActionDeleteConnection(modello,scenarioNo);
+                    deleteConnection.performActionAllConnections(sourcePathArray, targetPathArray);                
+                    break;
+                }
+                case "new_join_condition":
+                {              
                     String scenarioNo = request.getParameter("scenarioNo");
                     String sourcePath = request.getParameter("sourcePath");
                     String targetPath = request.getParameter("targetPath");
                     boolean isSource = Boolean.parseBoolean(request.getParameter("isSource"));
                     ActionNewJoinCondition newJoin = new ActionNewJoinCondition(modello,scenarioNo);
-                    newJoin.performAction(sourcePath,targetPath,isSource);
+                    newJoin.performAction(sourcePath,targetPath,isSource);                
+                    break; 
                 }
-                break;  
-            case "join_condition_options":
-                try (PrintWriter out = response.getWriter()) {            
+                case "join_condition_options":
+                {          
                     String scenarioNo = request.getParameter("scenarioNo");
                     String sourcePath = request.getParameter("sourcePath");
                     String targetPath = request.getParameter("targetPath");
                     boolean isSource = Boolean.parseBoolean(request.getParameter("isSource"));
                     String changedOption =(request.getParameter("changedOption"));
                     ActionJoinConditionChangeOptions changeJoin = new ActionJoinConditionChangeOptions(modello,scenarioNo);
-                    changeJoin.performAction(changedOption, sourcePath, targetPath, isSource);                    
+                    changeJoin.performAction(changedOption, sourcePath, targetPath, isSource);                          
+                    break;
                 }
-                break;
-            case "detached_connection":
-                try (PrintWriter out = response.getWriter()) { 
-                    String scenarioNo = request.getParameter("scenarioNo");                
-                    ActionDeleteConnection deleteConnection = new ActionDeleteConnection(modello,scenarioNo);
-                    deleteConnection.performAction(request);
-                }
-                break;
-            case "delete_all_connections":
-                try (PrintWriter out = response.getWriter()) { 
-                    String scenarioNo = request.getParameter("scenarioNo");
-                    String[] targetPathArray = request.getParameterValues("targetPathArray[]");
-                    ActionDeleteConnection deleteConnection = new ActionDeleteConnection(modello,scenarioNo);
-                    deleteConnection.performActionAllConnections(targetPathArray);
-                }
-                break;
-            case "detached_join":
-                try (PrintWriter out = response.getWriter()) { 
+                case "detached_join":
+                {   
                     String scenarioNo = request.getParameter("scenarioNo");
                     ActionDeleteJoinCondition deleteJoinCondition = new ActionDeleteJoinCondition(modello,scenarioNo);
-                    deleteJoinCondition.performAction(request);
+                    deleteJoinCondition.performAction(request);                
+                    break;  
                 }
-                break;                
-            case "select_mapping_task":
-                try (PrintWriter out = response.getWriter()) {
+                case "select_mapping_task":
+                {  
                     String scenarioNo = request.getParameter("scenarioNo");
                     ActionSelectMappingTask selectMappingTask = new ActionSelectMappingTask(modello);
                     selectMappingTask.performAction(scenarioNo);
-                    out.write(scenarioNo);
+                    outputObject.put("scenarioNo",scenarioNo);                
+                    break;
                 }
-                break;
-            case "generate":
-                try (PrintWriter out = response.getWriter()) {
+                case "generate":
+                {    
                     ActionGenerateTransformations generateTransformations = new ActionGenerateTransformations(modello);
                     generateTransformations.performAction();
-                    JSONObject tgds = generateTransformations.getTGDs();
-                    out.write(tgds.toJSONString());
+                    outputObject = generateTransformations.getTGDs();                
+                    break;
                 }
-                break;
-            case "show_mapping_task_info":
-                try (PrintWriter out = response.getWriter()) {
+                case "show_mapping_task_info":
+                {
                     String scenarioNo = request.getParameter("scenarioNo");
                     ActionViewTransformations viewTransformationInfo = new ActionViewTransformations(modello, scenarioNo);
-                    out.write(viewTransformationInfo.performAction());
+                    outputObject.put("info",viewTransformationInfo.performAction());            
+                    break;
                 }
-                break;
-            case "sql_output":
-                try (PrintWriter out = response.getWriter()) {
+                case "sql_output":
+                { 
                     String scenarioNo = request.getParameter("scenarioNo");
                     ActionViewSql viewSqlScript = new ActionViewSql(modello, Integer.valueOf(scenarioNo));
-                    out.write(viewSqlScript.performAction());
+                    outputObject.put("sqlScript",viewSqlScript.performAction());              
+                    break;
                 }
-                break;
-            case "xquery_output":
-                try (PrintWriter out = response.getWriter()) {
+                case "xquery_output":
+                {
                     String scenarioNo = request.getParameter("scenarioNo");
                     ActionViewXQuery viewXQueryScript = new ActionViewXQuery(modello, scenarioNo);
-                    out.write(viewXQueryScript.performAction());
+                    outputObject.put("xQueryScript",viewXQueryScript.performAction());                
+                    break;
                 }
-                break;
-            case "edit_selection_condition":
-                try (PrintWriter out = response.getWriter()) {
+                case "edit_selection_condition":
+                {
                     String specificAction = request.getParameter("specificAction");
                     String path = request.getParameter("path");
                     String scenarioNo = request.getParameter("scenarioNo");
                     String expression = request.getParameter("expression");
                     ActionSelectionCondition editSelectionCondition = new ActionSelectionCondition(modello, scenarioNo);
                     editSelectionCondition.performAction(specificAction, path, expression);
+                    break;
                 }
-                break;
-            case "remove_mapping_task":
-                try (PrintWriter out = response.getWriter()) { 
+                case "remove_mapping_task":
+                { 
                     String scenarioNo = request.getParameter("scenarioNo");
                     ActionRemoveMappingTask removeMappingTask = new ActionRemoveMappingTask(modello);
-                    removeMappingTask.performAction(scenarioNo);
-                }
-                break;
-            default: break;
+                    removeMappingTask.performAction(scenarioNo);                
+                    break;
+                }                 
+                case "export_tgds":{
+                    response.reset();
+                    response.setContentType("text/plain");                    
+                    response.setHeader("Content-disposition","attachment; filename=tgd.txt");
+                    ActionViewTGDs actionViewTgds = new ActionViewTGDs(modello);
+                    actionViewTgds.performAction();        
+                    String tgdsString = actionViewTgds.getTGDsString();
+                    
+                    out.write(tgdsString);
+                    send = false;
+                    
+                    /*try (OutputStream output = response.getOutputStream()) {                        
+                        output.write(tgdsString.getBytes());
+                        output.close();
+                    }*/
+                }                
+                default: break;
+            }
+            if (send)
+                out.write(outputObject.toJSONString());            
+            out.flush();
         }
-        
+        catch (NumberFormatException | DAOException ex){
+            outputObject.put("exception","Server exception: "+ex.getClass().getName()+": "+ex.getMessage());
+            out.write(outputObject.toJSONString());
+            out.flush();
+        }
+        catch (IllegalArgumentException ex){
+            //outputObject.put("exception","Server exception: "+ex.getClass().getName()+": "+ex.getMessage());
+            outputObject.put("exception","Server exception: "+ex.getClass().getName()+": Problem accessing user files");
+            out.write(outputObject.toJSONString());
+            out.flush();
+        }
+        catch(Exception ex){
+            outputObject.put("exception","Server exception: "+ex.getClass().getName()+": "+ex.getMessage());
+            out.write(outputObject.toJSONString());
+            out.flush();
+        }
     }
     
     private void initialize(){
@@ -252,11 +295,7 @@ public class MappingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            processRequest(request, response);
-        } catch (ParseException ex) {
-            Logger.getLogger(MappingServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        processRequest(request, response);      
     }
 
     /**
@@ -270,11 +309,7 @@ public class MappingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        try {
-            processRequest(request, response);
-        } catch (ParseException ex) {
-            Logger.getLogger(MappingServlet.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        processRequest(request, response);   
     }
 
     /**

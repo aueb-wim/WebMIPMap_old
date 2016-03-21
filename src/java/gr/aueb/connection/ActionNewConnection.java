@@ -6,6 +6,7 @@ import it.unibas.spicy.model.correspondence.ConstantValue;
 import it.unibas.spicy.model.correspondence.DateFunction;
 import it.unibas.spicy.model.correspondence.ISourceValue;
 import it.unibas.spicy.model.correspondence.NewIdFunction;
+import it.unibas.spicy.model.correspondence.DatetimeFunction;
 import it.unibas.spicy.model.correspondence.ValueCorrespondence;
 import it.unibas.spicy.model.expressions.Expression;
 import it.unibas.spicy.model.mapping.MappingTask;
@@ -13,9 +14,9 @@ import it.unibas.spicy.model.paths.PathExpression;
 import it.unibas.spicy.model.paths.operators.GeneratePathExpression;
 import it.unibas.spicy.persistence.xml.DAOXmlUtility;
 import it.unibas.spicy.utility.SpicyEngineConstants;
-import it.unibas.spicygui.Costanti;
+import gr.aueb.mipmapgui.Costanti;
 import it.unibas.spicygui.commons.Modello;
-import it.unibas.spicygui.controllo.Scenario;
+import gr.aueb.mipmapgui.controller.Scenario;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,38 +43,44 @@ public class ActionNewConnection {
         MappingTask mappingTask = scenario.getMappingTask();
         
         List<PathExpression> sourcePaths = null;
+        String fromPath="";
         if(sourcePathArray!=null){
             sourcePaths = new ArrayList<PathExpression>();
             for(String sourcePathString : sourcePathArray){
                 PathExpression pathExpression = generatePathExpression(sourcePathString);
                 sourcePaths.add(pathExpression);
             }
+            if (sourcePathArray.length==1)
+                fromPath = sourcePathArray[0];
         }
         ISourceValue sourceValue = null;
-        if (!sourceValueText.equals(null)&&!sourceValueText.equals("")){
+        if (sourceValueText!=null &&!sourceValueText.equals("")){
             if (sourceValueText.equalsIgnoreCase(SpicyEngineConstants.SOURCEVALUE_DATE_FUNCTION)) {
                 sourceValue = new DateFunction();
-            } else if (sourceValueText.equalsIgnoreCase(SpicyEngineConstants.SOURCEVALUE_NEWID_FUNCTION)) {
+            } else if (sourceValueText.equalsIgnoreCase(SpicyEngineConstants.SOURCEVALUE_DATETIME_FUNCTION)) {
+                sourceValue = new DatetimeFunction();
+            } 
+            else if (sourceValueText.equalsIgnoreCase(SpicyEngineConstants.SOURCEVALUE_NEWID_FUNCTION)) {
                 sourceValue = new NewIdFunction();
-            } else {
+            } 
+            else {
                 sourceValue = new ConstantValue(sourceValueText);
             }
+            fromPath = sourceValueText;
         }
         PathExpression targetPathExpression = generatePathExpression(targetPath);
         
         Expression transformationFunctionExpression = null;
         if(transformationText != null&&!transformationText.equals("")){
             transformationFunctionExpression = new Expression(DAOXmlUtility.cleanXmlString(transformationText));
+            if (!fromPath.equals(transformationText))
+               fromPath = transformationText;
         }
         double confidence = 1.0;
         ValueCorrespondence vc = new ValueCorrespondence(sourcePaths,sourceValue,targetPathExpression,transformationFunctionExpression,confidence);
-        
-        mappingTask.addCorrespondence(vc);
-        
-        String key = targetPath;
-        scenario.addCorrespondence(key, vc);   
-
-        
+        mappingTask.addCorrespondence(vc);        
+        String key = fromPath + "->" + targetPath;
+        scenario.addCorrespondence(key, vc);           
         //DUMMY CONFIG
         /*mappingTask.getConfig().setRewriteSubsumptions(true);
         mappingTask.getConfig().setRewriteCoverages(true);
@@ -81,9 +88,7 @@ public class ActionNewConnection {
         mappingTask.getConfig().setRewriteEGDs(false);
         mappingTask.getConfig().setSortStrategy(-1);
         mappingTask.getConfig().setSkolemTableStrategy(-1);
-        mappingTask.getConfig().setUseLocalSkolem(false);*/
-        
-
+        mappingTask.getConfig().setUseLocalSkolem(false);*/       
     }
     
     private PathExpression generatePathExpression(String sourcePath) {

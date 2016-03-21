@@ -3,9 +3,9 @@ package gr.aueb.connection;
 //giannisk
 import it.unibas.spicy.model.correspondence.ValueCorrespondence;
 import it.unibas.spicy.model.mapping.MappingTask;
-import it.unibas.spicygui.Costanti;
+import gr.aueb.mipmapgui.Costanti;
 import it.unibas.spicygui.commons.Modello;
-import it.unibas.spicygui.controllo.Scenario;
+import gr.aueb.mipmapgui.controller.Scenario;
 import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,27 +20,33 @@ public class ActionDeleteConnection {
     
     public void performAction(HttpServletRequest request) {
         String targetPath = request.getParameter("targetPath");
+        String sourcePath = request.getParameter("sourcePath");
+       
         HashMap<Integer, Scenario> scenarioMap = (HashMap) modello.getBean(Costanti.SCENARIO_MAPPER);
         Scenario scenario = scenarioMap.get(Integer.valueOf(scenarioNo));
         MappingTask mappingTask = scenario.getMappingTask();
         if(targetPath!=null&&!targetPath.equals("")){
-            ValueCorrespondence vcToDelete = scenario.getCorrespondence(targetPath);
+            String key = sourcePath + "->" + targetPath;
+            ValueCorrespondence vcToDelete = scenario.getCorrespondence(key);
             mappingTask.removeCorrespondence(vcToDelete);
             ////mappingTask.removeCandidateCorrespondence(vcToDelete);
             scenario.removeCorrespondence(targetPath);
         }
     }
     
-    public void performActionAllConnections(String[] targetPathArray) { 
+    public void performActionAllConnections(String[] sourcePathArray, String[] targetPathArray) { 
         HashMap<Integer, Scenario> scenarioMap = (HashMap) modello.getBean(Costanti.SCENARIO_MAPPER);
         Scenario scenario = scenarioMap.get(Integer.valueOf(scenarioNo));
         MappingTask mappingTask = scenario.getMappingTask();
-        if (targetPathArray!=null){
-            for (String targetPath : targetPathArray){
-                if(targetPath!=null&&!targetPath.equals("")){
-                    ValueCorrespondence vcToDelete = scenario.getCorrespondence(targetPath);
+        if (sourcePathArray!=null && targetPathArray!=null && sourcePathArray.length==targetPathArray.length){
+            for (int i = 0; i < sourcePathArray.length; i++){
+                if(sourcePathArray[i]!=null&&targetPathArray[i]!=null&&!targetPathArray[i].equals("")){
+                    String fromPath = sourcePathArray[i];
+                    String toPath = targetPathArray[i];
+                    String key = fromPath + "->" + toPath;
+                    ValueCorrespondence vcToDelete = scenario.getCorrespondence(key);
                     mappingTask.removeCorrespondence(vcToDelete);
-                    scenario.removeCorrespondence(targetPath);
+                    scenario.removeCorrespondence(key);
                 }
             }
         }
