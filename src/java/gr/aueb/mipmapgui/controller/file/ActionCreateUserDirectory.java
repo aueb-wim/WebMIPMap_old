@@ -14,8 +14,7 @@ public class ActionCreateUserDirectory {
         this.modello=modello;
     }    
     
-    public void performAction(String user) throws Exception{
-        if (Costanti.SERVER_MAIN_FOLDER != null){        
+    public void performAction(String user) {       
             Path path_upload = Paths.get(Costanti.SERVER_MAIN_FOLDER + Costanti.SERVER_FILES_FOLDER);
             if (!Files.exists(path_upload))
                 new File(path_upload.toString()).mkdir();
@@ -34,9 +33,5 @@ public class ActionCreateUserDirectory {
             if (!Files.exists(path_schemata))
                 new File(path_schemata.toString()).mkdir();
 
-        }
-        else {
-            throw new Exception("Directory issue. Null path.");
-        }
     }   
 }

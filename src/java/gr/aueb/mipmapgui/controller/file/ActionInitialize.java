@@ -15,12 +15,12 @@ public class ActionInitialize {
         this.modello=modello;
     }
     
-    public void performAction(String user) throws Exception{
+    public void performAction(String user) {
         getSavedUserFiles(user);
         getSavedSchemata();        
     }
     
-    private void getSavedUserFiles(String user) throws Exception{        
+    private void getSavedUserFiles(String user) {        
         JSONArray taskFileArr = new JSONArray();
         
         ActionCreateUserDirectory actionCreateUserDirectory = new ActionCreateUserDirectory(modello);

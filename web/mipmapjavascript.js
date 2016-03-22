@@ -1826,7 +1826,8 @@ function addToList(id, id2){
     var option_value = $('#'+'dir'+type).val();
     var list_id = type+'FilesListbox';
     //delete the "C:\fakepath\" that some browsers (IE/Chrome) put in front of the file name
-    option_value = option_value.replace(/C:\\fakepath\\/i, '');
+    //option_value = option_value.replace(/C:\\fakepath\\/i, '');
+    option_value = option_value.split('\\').pop();
     //if there is a file selected on the filechooser
     if (option_value!=='') {
         //..and if it is a csv file
@@ -1913,8 +1914,8 @@ function uploadFile(id){
         }
         else if (sourceType==="Target"){
             servlet = 'TargetFileHandlerServlet';
-        }
-            //call the appropriate servlet
+        }        
+        //call the appropriate servlet
         $.ajax( {
             url: servlet,
             type: 'POST',
@@ -1966,7 +1967,7 @@ function createNewMapTaskDialog(type){
          </select><br\><br\><br\>\
          <div id="csv'+type+'" class="inputMenu'+type+'">\
             <label for="dbName'+type+'">Enter Database Name (*Mandatory)</label>\
-            <input id="dbName'+type+'" name="dbName'+type+'" type="text" value="'+type+'DB" size="50" class="required" ><br\>\
+            <input id="dbName'+type+'" name="dbName'+type+'" type="text" size="50" class="required" ><br\>\
             <label for="dir'+type+'">Choose '+type+' Files:</label>\
             <input type="file" name="dir'+type+'" id="dir'+type+'" accept=".csv"/><br\>\
             <input type="button" id="add'+type+'" class="addButton" value="Add">\
@@ -1980,7 +1981,7 @@ function createNewMapTaskDialog(type){
          </div>\
          <div id="sql'+type+'" class="inputMenu'+type+'">\
             <label for="sqlDbName'+type+'">Enter Database Name (*Mandatory)</label>\
-            <input id="sqlDbName'+type+'" name="sqlDbName'+type+'" type="text" value="SQL'+type+'DB" size="50" class="required" ><br\>\
+            <input id="sqlDbName'+type+'" name="sqlDbName'+type+'" type="text" size="50" class="required" ><br\>\
             <label for="sqlSchema'+type+'">Schema File (*Mandatory)</label>\
             <input type="file" name="sqlSchema'+type+'" id="sqlSchema'+type+'" accept=".sql" class="required fileSchema"/><br\>\
          </div>\
@@ -2175,14 +2176,26 @@ $(document).ready(function(){
                $("#TargetFilesListbox > option").each(function()
                 {
                     filesTarget.push($(this).val());
-                });                
+                });    
+                
+                //delete the "C:\fakepath\" that some browsers (IE/Chrome) put in front of the file name
+                var sqlSource = $("#sqlSchemaSource").val();
+                sqlSource = sqlSource.split('\\').pop();
+                var sqlTarget = $("#sqlSchemaTarget").val();
+                sqlTarget = sqlTarget.split('\\').pop();
+                
+                var xmlSource = $("#xmlSchemaSource").val();
+                xmlSource = xmlSource.split('\\').pop();
+                var xmlTarget = $("#xmlSchemaTarget").val();
+                xmlTarget = xmlTarget.split('\\').pop();
+                
                 $.post("MappingServlet", {action:"new_mapping_task", scenarioNo: scenarioCounter+1, typeSource : $("#typeSource").val(), typeTarget : $("#typeTarget").val(),
-                    dbnameSource : $("#dbNameSource").val(), filesSource: filesSource, xmlSource : $("#xmlSchemaSource").val(),
-                    sqlDbNameSource: $("#sqlDbNameSource").val(), sqlSource : $("#sqlSchemaSource").val(), savedDBNameSource: $("#savedDBNameSource").val(),
+                    dbnameSource : $("#dbNameSource").val(), filesSource: filesSource, xmlSource : xmlSource,
+                    sqlDbNameSource: $("#sqlDbNameSource").val(), sqlSource : sqlSource, savedDBNameSource: $("#savedDBNameSource").val(),
                     driverSource : $("#driverSource").val(), uriSource: $("#uriSource").val(), 
                     usernameSource: $("#usernameSource").val(), passwordSource: $("#passwordSource").val(),
-                    dbnameTarget : $("#dbNameTarget").val(), filesTarget : filesTarget, xmlTarget: $("#xmlSchemaTarget").val(),
-                    sqlDbNameTarget: $("#sqlDbNameTarget").val(), sqlTarget : $("#sqlSchemaTarget").val(), savedDBNameTarget: $("#savedDBNameTarget").val(),
+                    dbnameTarget : $("#dbNameTarget").val(), filesTarget : filesTarget, xmlTarget: xmlTarget,
+                    sqlDbNameTarget: $("#sqlDbNameTarget").val(), sqlTarget : sqlTarget, savedDBNameTarget: $("#savedDBNameTarget").val(),
                     driverTarget : $("#driverTarget").val(), uriTarget: $("#uriTarget").val(), 
                     usernameTarget: $("#usernameTarget").val(), passwordTarget: $("#passwordTarget").val()                
                     /*querystring : JSON.stringify($("#wizard1").serializeArray()), filesSource: filesSource, filesTarget : filesTarget*/

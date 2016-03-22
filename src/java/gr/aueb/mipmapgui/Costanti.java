@@ -416,7 +416,7 @@ public class Costanti {
     
     //SERVER FOLDERS/PATHS
     //public static final String SERVER_MAIN_FOLDER = "C:/Users/OLAF/Desktop/WebMIPMap/";
-    public static final String SERVER_MAIN_FOLDER = System.getenv("MIPMAP_HOME");
+    public static final String SERVER_MAIN_FOLDER = System.getenv("MIPMAP_HOME").replace("", "");
     public static final String SERVER_FILES_FOLDER = "/uploaded_files/";
     public static final String SERVER_SCHEMATA_FOLDER = "/schemata/";
     public static final String SERVER_TEMP_FOLDER = "temp/";

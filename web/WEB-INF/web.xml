@@ -7,18 +7,10 @@
     <servlet>
         <servlet-name>SourceFileHandlerServlet</servlet-name>
         <servlet-class>gr.aueb.servlets.SourceFileHandlerServlet</servlet-class>
-        <init-param>
-            <param-name>FILE_UPLOAD_PATH</param-name>
-            <param-value>${a.system.MIPMAP_HOME}</param-value>
-        </init-param>
     </servlet>
     <servlet>
         <servlet-name>TargetFileHandlerServlet</servlet-name>
         <servlet-class>gr.aueb.servlets.TargetFileHandlerServlet</servlet-class>
-        <init-param>
-            <param-name>FILE_UPLOAD_PATH</param-name>
-            <param-value>${a.system.MIPMAP_HOME}</param-value>
-        </init-param>
     </servlet>
     <servlet-mapping>
         <servlet-name>MappingServlet</servlet-name>

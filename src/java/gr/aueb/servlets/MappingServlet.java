@@ -262,8 +262,8 @@ public class MappingServlet extends HttpServlet {
             out.flush();
         }
         catch (IllegalArgumentException ex){
-            //outputObject.put("exception","Server exception: "+ex.getClass().getName()+": "+ex.getMessage());
-            outputObject.put("exception","Server exception: "+ex.getClass().getName()+": Problem accessing user files");
+            outputObject.put("exception","Server exception: "+ex.getClass().getName()+": "+ex.getMessage());
+            //outputObject.put("exception","Server exception: "+ex.getClass().getName()+": Problem accessing user files");
             out.write(outputObject.toJSONString());
             out.flush();
         }

@@ -1,23 +1,26 @@
 package gr.aueb.servlets;
 
+import gr.aueb.file.DiscardBOM;
 import gr.aueb.mipmapgui.Costanti;
 import it.unibas.spicygui.commons.Modello;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.PushbackInputStream;
+import java.nio.file.Files;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Part;
 import org.json.simple.JSONObject;
 
 //giannisk
-@MultipartConfig(location = "FILE_UPLOAD_PATH"+Costanti.SERVER_FILES_FOLDER, fileSizeThreshold=1024*1024, 
-    maxFileSize=1024*1024*20, maxRequestSize=1024*1024*20*5)
+@MultipartConfig(fileSizeThreshold=1024*1024,maxFileSize=1024*1024*20, maxRequestSize=1024*1024*20*5)
 public class SourceFileHandlerServlet extends HttpServlet {
 
     private Modello modello;
@@ -42,19 +45,29 @@ public class SourceFileHandlerServlet extends HttpServlet {
         JSONObject outputObject = new JSONObject(); 
         PrintWriter out = response.getWriter();
         
-        String path = user + "/" + Costanti.SERVER_TEMP_FOLDER + Costanti.SERVER_SOURCE_FOLDER;        
+        String path = Costanti.SERVER_MAIN_FOLDER+Costanti.SERVER_FILES_FOLDER
+                       + user + "/" + Costanti.SERVER_TEMP_FOLDER + Costanti.SERVER_SOURCE_FOLDER;        
         String action = request.getParameter("buttonPressed");
         
         try{
             if(action.equalsIgnoreCase("upload_file")){
                 String type = request.getParameter("inputTypeSource");
-                Part sourceFilePart = request.getPart(type+"SchemaSource");           
-                sourceFilePart.write(path + sourceFilePart.getSubmittedFileName());
+                Part sourceFilePart = request.getPart(type+"SchemaSource"); 
+                
+                String [] fileNameArray = sourceFilePart.getSubmittedFileName().split("\\\\");               
+                String fileName = fileNameArray[fileNameArray.length-1];
+
+                File file = new File(path, fileName);
+
+                try (InputStream input = sourceFilePart.getInputStream()){ 
+                    Files.copy(DiscardBOM.checkForUtf8BOMAndDiscardIfAny(input), file.toPath());
+                }
+                
             }
             else if (action.equalsIgnoreCase("add")){
                 String fileName = request.getParameter("fileName");
                 String firstLine = request.getParameter("firstLine");
-                File file = new File(Costanti.SERVER_MAIN_FOLDER + Costanti.SERVER_FILES_FOLDER + path + fileName);
+                File file = new File(path + fileName);
                 try(FileWriter writer = new FileWriter(file)) {                                            
                     writer.write(firstLine);
                 }
@@ -62,7 +75,7 @@ public class SourceFileHandlerServlet extends HttpServlet {
             else if (action.equalsIgnoreCase("remove")){
                 String fileNameToDelete = request.getParameter("filesSource");
 
-                File deleteFile = new File(Costanti.SERVER_MAIN_FOLDER + Costanti.SERVER_FILES_FOLDER + path + fileNameToDelete);
+                File deleteFile = new File(path + fileNameToDelete);
                 // check if the file  present or not
                 if( deleteFile.exists() ){
                     deleteFile.delete() ;
@@ -76,7 +89,7 @@ public class SourceFileHandlerServlet extends HttpServlet {
             out.flush();
         } 
     }
-    
+        
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

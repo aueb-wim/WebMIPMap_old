@@ -121,7 +121,7 @@ class InstanceTreeVisitor implements INodeVisitor {
                 this.treeString=this.treeString+",{ \"id\" : \"node"+node.getValue()+"\", \"parent\" : \"node"+node.getFather().getValue()+"\" , \"text\" : \""+node.getLabel()+"\" }";
             }
         }
-        //System.out.println("NODE "+node.getLabel()+" "+node.getClass().getName());
+
         if (node instanceof SetNode || node instanceof TupleNode){
             for (INode child : node.getChildren()) {
                 visitNode2(child);
