@@ -1,13 +1,13 @@
-/* Copyright 2015, 2015 by the Athens University of Economics and Business (AUEB).
+/* Copyright 2015, 2016 by the Athens University of Economics and Business (AUEB).
 
-   This file is part of MipMap.
+   This file is part of WebMIPMap.
 
-   MipMap is free software: you can redistribute it and/or modify
+   WebMIPMap is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    MipMap is distributed in the hope that it will be useful,
+    WebMIPMap is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
